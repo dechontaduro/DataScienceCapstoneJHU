@@ -3,6 +3,7 @@ library(quanteda)
 library(data.table)
 
 source("predict.R")
+source("ngramsLoad.R")
 
 shinyServer(function(input, output) {
   resultPred <- reactive({predictNextWord(input$text, input$corpus)})

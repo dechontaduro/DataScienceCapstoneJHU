@@ -12,6 +12,21 @@ cleanText <- function(text){
   return(text)
 }
 
+separateTerms = function(x){
+  # Pre-allocate
+  firstTerms = character(length(x))
+  lastTerm = character(length(x))
+  
+  for(i in 1:length(x)){
+    posOfSpaces = gregexpr("_", x[i])[[1]]
+    posOfLastSpace = posOfSpaces[length(posOfSpaces)]
+    firstTerms[i] = substr(x[i], 1, posOfLastSpace-1)
+    lastTerm[i] = substr(x[i], posOfLastSpace+1, nchar(x[i]))
+  }
+  
+  list(firstTerms=firstTerms, lastTerm=lastTerm)
+}
+
 
 predictNextWord <- function(text, filengram){
   text <- cleanText(text)
@@ -34,6 +49,8 @@ predictNextWord <- function(text, filengram){
       return(list("grams" = groupGrams, "nwords" = nwords, "ngram" = igram))
     }
   }
+  groupGrams <- ngramsPred[[filengram]][["dis"]][[1]][1]
+  return(list("grams" = groupGrams, "nwords" = nwords, "ngram" = 1))
 }
 
 finalProbKatz <- function (ngrams, nwords, ngram, filengram){
@@ -69,36 +86,3 @@ finalProbKatz <- function (ngrams, nwords, ngram, filengram){
   }
 }
 
-#loadNgramsPredict <- function(){
-  ngramMax <- 5
-  ngramMin <- 1
-  sampleFactor <- 0.1
-  all.sample <- "./data/all.txt"
-  files <- c("all" = all.sample)
-  
-  ngramsPred <- 
-    lapply(names(files), function(x){
-      print(paste(x, "load GramDiscountLeftOverProb ngrams"))
-      
-      filen <- paste("",files[x], sep = "")
-      file.sample <- paste(filen, "sample", sampleFactor, sep = ".")
-      
-      file.dt <- list()
-      file.dt.lop <- list()
-      for(i in ngramMin:ngramMax){
-        time.start <- Sys.time()
-        print(paste(x, "loading GramDiscountLeftOverProb ngrams:", i))
-        file.dt[[i]] <- readRDS(paste(file.sample, i, "frecdis.rds", sep = "_"))
-        file.dt.lop[[i]] <- readRDS(paste(file.sample, i, "frecdislop.rds", sep = "_"))
-        
-        time.end <- Sys.time()
-        print(time.end - time.start)
-      }
-      
-      return (list("dis" = file.dt, "lop" = file.dt.lop))
-    })
-  
-  names(ngramsPred) <- names(files)
-  
-#  return(ngramsPred)  
-#}
